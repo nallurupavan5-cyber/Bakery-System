@@ -1,0 +1,13 @@
+# Secrets and local database
+.env
+bakery.db
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+venv/
+
+# Uploaded files (sample images only, no user uploads)
+static/uploads/*
+!static/uploads/.gitkeep

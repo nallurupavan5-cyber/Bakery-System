@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% block title %}Supplier Management | {{ bakery_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 fw-bold mb-1"><i class="bi bi-truck text-warning me-2"></i> Bakery Ingredient Suppliers</h1>
+      <p class="text-muted small mb-0">Manage dairy partners, flour mills, chocolate importers, and packaging vendors</p>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-caramel btn-sm" data-bs-toggle="modal" data-bs-target="#addSupplierModal">
+        <i class="bi bi-plus-circle me-1"></i> Register Supplier
+      </button>
+      <a href="{{ url_for('inventory.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Inventory
+      </a>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+    <div class="table-responsive">
+      <table class="table align-middle table-hover">
+        <thead class="table-light small text-uppercase">
+          <tr>
+            <th>Supplier Name</th>
+            <th>Contact Phone</th>
+            <th>Email</th>
+            <th>Address</th>
+            <th>Items Supplied</th>
+            <th>Supplied Ingredients</th>
+            <th>Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in suppliers %}
+            <tr>
+              <td><strong>{{ s.name }}</strong></td>
+              <td>{{ s.phone }}</td>
+              <td>{{ s.email or 'N/A' }}</td>
+              <td class="small text-muted" style="max-width: 200px;">{{ s.address or 'N/A' }}</td>
+              <td class="small">{{ s.items_supplied or 'General Bakery Supplies' }}</td>
+              <td>
+                <span class="badge bg-secondary-subtle text-secondary">
+                  {{ s.ingredients.count() }} ingredients
+                </span>
+              </td>
+              <td>
+                <span class="badge {% if s.status == 'Active' %}bg-success-subtle text-success{% else %}bg-secondary-subtle text-secondary{% endif %}">
+                  {{ s.status }}
+                </span>
+              </td>
+              <td class="text-end">
+                <div class="btn-group btn-group-sm">
+                  <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editSupplierModal{{ s.supplier_id }}" title="Edit">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <form action="{{ url_for('inventory.suppliers') }}" method="POST" class="d-inline" onsubmit="return confirm('Delete supplier {{ s.name }}?');">
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="supplier_id" value="{{ s.supplier_id }}">
+                    <button type="submit" class="btn btn-outline-secondary text-danger" title="Delete">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </form>
+                </div>
+
+                <!-- Edit Modal -->
+                <div class="modal fade" id="editSupplierModal{{ s.supplier_id }}" tabindex="-1" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content rounded-4 border-0">
+                      <div class="modal-header border-bottom">
+                        <h5 class="modal-title fw-bold">Edit Supplier: {{ s.name }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <form action="{{ url_for('inventory.suppliers') }}" method="POST">
+                        <input type="hidden" name="action" value="edit">
+                        <input type="hidden" name="supplier_id" value="{{ s.supplier_id }}">
+                        <div class="modal-body text-start">
+                          <div class="mb-3">
+                            <label class="form-label small fw-semibold">Company / Supplier Name</label>
+                            <input type="text" name="name" value="{{ s.name }}" class="form-control" required>
+                          </div>
+                          <div class="row g-2 mb-3">
+                            <div class="col-6">
+                              <label class="form-label small fw-semibold">Phone</label>
+                              <input type="tel" name="phone" value="{{ s.phone }}" class="form-control" required>
+                            </div>
+                            <div class="col-6">
+                              <label class="form-label small fw-semibold">Email</label>
+                              <input type="email" name="email" value="{{ s.email or '' }}" class="form-control">
+                            </div>
+                          </div>
+                          <div class="mb-3">
+                            <label class="form-label small fw-semibold">Physical Address</label>
+                            <input type="text" name="address" value="{{ s.address or '' }}" class="form-control">
+                          </div>
+                          <div class="mb-3">
+                            <label class="form-label small fw-semibold">Items Supplied</label>
+                            <input type="text" name="items_supplied" value="{{ s.items_supplied or '' }}" class="form-control">
+                          </div>
+                          <div class="mb-3">
+                            <label class="form-label small fw-semibold">Status</label>
+                            <select name="status" class="form-select">
+                              <option value="Active" {% if s.status == 'Active' %}selected{% endif %}>Active</option>
+                              <option value="Inactive" {% if s.status == 'Inactive' %}selected{% endif %}>Inactive</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="modal-footer border-top">
+                          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                          <button type="submit" class="btn btn-caramel btn-sm">Save Changes</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- Add Supplier Modal -->
+<div class="modal fade" id="addSupplierModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content rounded-4 border-0">
+      <div class="modal-header border-bottom">
+        <h5 class="modal-title fw-bold">Register New Supplier</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form action="{{ url_for('inventory.suppliers') }}" method="POST">
+        <input type="hidden" name="action" value="add">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Supplier Name <span class="text-danger">*</span></label>
+            <input type="text" name="name" class="form-control" placeholder="e.g. Golden Grain Mills" required>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label small fw-semibold">Phone <span class="text-danger">*</span></label>
+              <input type="tel" name="phone" class="form-control" placeholder="+1 (555) 000-0000" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-semibold">Email</label>
+              <input type="email" name="email" class="form-control" placeholder="orders@supplier.com">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Physical Address</label>
+            <input type="text" name="address" class="form-control" placeholder="Street, City, State">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Items Supplied</label>
+            <input type="text" name="items_supplied" class="form-control" placeholder="e.g. Flour, Whole Wheat, Dry Yeast">
+          </div>
+        </div>
+        <div class="modal-footer border-top">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-caramel btn-sm">Register Supplier</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

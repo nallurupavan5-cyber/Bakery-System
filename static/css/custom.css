@@ -1,0 +1,514 @@
+/* ====================================================
+   Sweet Delights Bakery - Custom Production Stylesheet
+   Theme: Warm Cream, Artisan Chocolate Brown, Caramel Gold
+   ==================================================== */
+
+:root {
+  --bakery-cream: #FAF6F0;
+  --bakery-cream-light: #FFFDF9;
+  --bakery-chocolate: #2B1810;
+  --bakery-chocolate-light: #3E2723;
+  --bakery-brown-muted: #6B4F40;
+  --bakery-caramel: #D97706;
+  --bakery-caramel-hover: #B45309;
+  --bakery-caramel-light: #FEF3C7;
+  --bakery-amber: #F59E0B;
+  --bakery-card-bg: #FFFFFF;
+  --bakery-border: #EADBCE;
+  --bakery-border-light: #F2E9DE;
+  --bakery-shadow-sm: 0 2px 8px rgba(43, 24, 16, 0.05);
+  --bakery-shadow-md: 0 8px 24px rgba(43, 24, 16, 0.08);
+  --bakery-shadow-lg: 0 16px 36px rgba(43, 24, 16, 0.12);
+  --bakery-radius-sm: 8px;
+  --bakery-radius-md: 14px;
+  --bakery-radius-lg: 20px;
+}
+
+body {
+  background-color: var(--bakery-cream);
+  color: var(--bakery-chocolate);
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3, .font-serif {
+  font-family: 'Playfair Display', Georgia, serif;
+  color: var(--bakery-chocolate);
+  letter-spacing: -0.01em;
+}
+
+/* ----------------------------------------------------
+   Navbar & Navigation
+   ---------------------------------------------------- */
+.navbar-bakery {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--bakery-border);
+  box-shadow: var(--bakery-shadow-sm);
+  padding: 0.8rem 1rem;
+  transition: all 0.3s ease;
+}
+
+.navbar-brand-logo {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 700;
+  font-size: 1.45rem;
+  color: var(--bakery-chocolate) !important;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.navbar-brand-logo i {
+  color: var(--bakery-caramel);
+  font-size: 1.6rem;
+}
+
+.nav-link {
+  color: var(--bakery-chocolate) !important;
+  font-weight: 500;
+  padding: 0.5rem 0.9rem !important;
+  border-radius: var(--bakery-radius-sm);
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover, .nav-link.active {
+  color: var(--bakery-caramel) !important;
+  background: var(--bakery-caramel-light);
+}
+
+.cart-badge {
+  background-color: var(--bakery-caramel);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.25rem 0.55rem;
+  position: relative;
+  top: -2px;
+}
+
+/* ----------------------------------------------------
+   Buttons & Links
+   ---------------------------------------------------- */
+.btn-bakery {
+  background-color: var(--bakery-chocolate);
+  color: #ffffff;
+  border: 1px solid var(--bakery-chocolate);
+  border-radius: var(--bakery-radius-md);
+  font-weight: 600;
+  padding: 0.6rem 1.4rem;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-bakery:hover {
+  background-color: var(--bakery-chocolate-light);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(43, 24, 16, 0.18);
+}
+
+.btn-caramel {
+  background: linear-gradient(135deg, #D97706, #B45309);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--bakery-radius-md);
+  font-weight: 600;
+  padding: 0.6rem 1.4rem;
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25);
+  transition: all 0.25s ease;
+}
+
+.btn-caramel:hover {
+  background: linear-gradient(135deg, #B45309, #92400E);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(217, 119, 6, 0.35);
+}
+
+.btn-outline-bakery {
+  color: var(--bakery-chocolate);
+  border: 1.5px solid var(--bakery-chocolate);
+  border-radius: var(--bakery-radius-md);
+  font-weight: 600;
+  padding: 0.55rem 1.3rem;
+  transition: all 0.2s ease;
+}
+
+.btn-outline-bakery:hover {
+  background-color: var(--bakery-chocolate);
+  color: #ffffff;
+}
+
+/* ----------------------------------------------------
+   Cards & Surfaces
+   ---------------------------------------------------- */
+.bakery-card {
+  background: #ffffff;
+  border: 1px solid var(--bakery-border-light);
+  border-radius: var(--bakery-radius-md);
+  box-shadow: var(--bakery-shadow-sm);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  overflow: hidden;
+}
+
+.bakery-card:hover {
+  box-shadow: var(--bakery-shadow-md);
+}
+
+.product-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--bakery-shadow-md);
+}
+
+.product-img-wrapper {
+  position: relative;
+  height: 210px;
+  background: #fbf7f2;
+  overflow: hidden;
+}
+
+.product-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.product-card:hover .product-img {
+  transform: scale(1.05);
+}
+
+.product-badge-category {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(43, 24, 16, 0.82);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+}
+
+.product-badge-stock {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+}
+
+/* ----------------------------------------------------
+   Hero & Showcase Sections
+   ---------------------------------------------------- */
+.hero-section {
+  background: linear-gradient(135deg, #FFFDF9 0%, #F5EBE1 100%);
+  border-radius: var(--bakery-radius-lg);
+  border: 1px solid var(--bakery-border);
+  padding: 4.5rem 2.5rem;
+  margin-bottom: 3.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-section::after {
+  content: '';
+  position: absolute;
+  top: -100px;
+  right: -100px;
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(217, 119, 6, 0.12) 0%, rgba(255, 255, 255, 0) 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.hero-title {
+  font-size: 3.2rem;
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--bakery-chocolate);
+  margin-bottom: 1.25rem;
+}
+
+.hero-subtitle {
+  font-size: 1.2rem;
+  color: var(--bakery-brown-muted);
+  max-width: 580px;
+  margin-bottom: 2rem;
+}
+
+/* ----------------------------------------------------
+   Admin & Staff Sidebar Layout
+   ---------------------------------------------------- */
+.dashboard-wrapper {
+  display: flex;
+  min-height: calc(100vh - 68px);
+}
+
+.dashboard-sidebar {
+  width: 260px;
+  background: #ffffff;
+  border-right: 1px solid var(--bakery-border);
+  padding: 1.5rem 1rem;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-heading {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--bakery-brown-muted);
+  font-weight: 700;
+  padding: 0.5rem 0.75rem;
+  margin-top: 1rem;
+}
+
+.sidebar-nav .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.9rem !important;
+  color: var(--bakery-chocolate) !important;
+  font-weight: 500;
+  margin-bottom: 0.2rem;
+  border-radius: var(--bakery-radius-sm);
+}
+
+.sidebar-nav .nav-link i {
+  font-size: 1.15rem;
+  color: var(--bakery-brown-muted);
+  width: 22px;
+}
+
+.sidebar-nav .nav-link.active,
+.sidebar-nav .nav-link:hover {
+  background: var(--bakery-caramel-light);
+  color: var(--bakery-caramel) !important;
+}
+
+.sidebar-nav .nav-link.active i,
+.sidebar-nav .nav-link:hover i {
+  color: var(--bakery-caramel);
+}
+
+.dashboard-content {
+  flex-grow: 1;
+  padding: 2rem;
+  overflow-y: auto;
+  background: var(--bakery-cream);
+}
+
+/* ----------------------------------------------------
+   Stats Metric Widget
+   ---------------------------------------------------- */
+.stat-widget {
+  background: #ffffff;
+  border: 1px solid var(--bakery-border-light);
+  border-radius: var(--bakery-radius-md);
+  padding: 1.4rem;
+  box-shadow: var(--bakery-shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stat-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.stat-icon.caramel { background: #FEF3C7; color: #D97706; }
+.stat-icon.green { background: #D1FAE5; color: #059669; }
+.stat-icon.blue { background: #DBEAFE; color: #2563EB; }
+.stat-icon.red { background: #FEE2E2; color: #DC2626; }
+.stat-icon.chocolate { background: #EFEBE9; color: #3E2723; }
+
+/* ----------------------------------------------------
+   Badges & Indicators
+   ---------------------------------------------------- */
+.badge-status-pending { background-color: #FEF3C7; color: #B45309; }
+.badge-status-confirmed { background-color: #DBEAFE; color: #1E40AF; }
+.badge-status-preparing { background-color: #EDE9FE; color: #6D28D9; }
+.badge-status-ready { background-color: #CFFAFE; color: #0E7490; }
+.badge-status-delivered { background-color: #D1FAE5; color: #047857; }
+.badge-status-cancelled { background-color: #FEE2E2; color: #B91C1C; }
+
+.badge-low-stock {
+  background-color: #FEE2E2;
+  color: #DC2626;
+  border: 1px solid #FCA5A5;
+  font-weight: 700;
+  animation: pulse-border 2s infinite;
+}
+
+@keyframes pulse-border {
+  0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+}
+
+/* ----------------------------------------------------
+   Kitchen Display System (KDS) Cards
+   ---------------------------------------------------- */
+.kds-card {
+  border-left: 6px solid var(--bakery-caramel);
+  background: #ffffff;
+  border-radius: var(--bakery-radius-md);
+  box-shadow: var(--bakery-shadow-sm);
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+  transition: all 0.25s ease;
+}
+
+.kds-card.status-pending { border-left-color: #F59E0B; }
+.kds-card.status-confirmed { border-left-color: #3B82F6; }
+.kds-card.status-preparing { border-left-color: #8B5CF6; }
+.kds-card.status-ready { border-left-color: #10B981; }
+
+/* ----------------------------------------------------
+   Order Tracking Stepper
+   ---------------------------------------------------- */
+.tracking-stepper {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  margin: 2.5rem 0;
+}
+
+.tracking-stepper::before {
+  content: '';
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  right: 24px;
+  height: 4px;
+  background: #E5E7EB;
+  z-index: 1;
+}
+
+.step-item {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  flex: 1;
+}
+
+.step-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #E5E7EB;
+  color: #9CA3AF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 0.75rem auto;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+.step-item.active .step-circle {
+  background: var(--bakery-caramel);
+  color: #ffffff;
+  box-shadow: 0 0 0 6px var(--bakery-caramel-light);
+}
+
+.step-item.completed .step-circle {
+  background: #10B981;
+  color: #ffffff;
+}
+
+.step-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--bakery-brown-muted);
+}
+
+.step-item.active .step-label {
+  color: var(--bakery-chocolate);
+}
+
+/* ----------------------------------------------------
+   Footer
+   ---------------------------------------------------- */
+.bakery-footer {
+  background: #23130C;
+  color: #D7CCC8;
+  margin-top: auto;
+  padding: 3.5rem 1rem 1.5rem 1rem;
+}
+
+.footer-heading {
+  font-family: 'Playfair Display', Georgia, serif;
+  color: #FFFFFF;
+  font-size: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.footer-links a {
+  color: #BCAAA4;
+  text-decoration: none;
+  display: block;
+  margin-bottom: 0.6rem;
+  transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+  color: var(--bakery-caramel);
+}
+
+/* ----------------------------------------------------
+   Responsive Adjustments
+   ---------------------------------------------------- */
+@media (max-width: 992px) {
+  .dashboard-wrapper {
+    flex-direction: column;
+  }
+  .dashboard-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--bakery-border);
+  }
+  .hero-title {
+    font-size: 2.2rem;
+  }
+}
+
+/* ----------------------------------------------------
+   Print Stylesheet
+   ---------------------------------------------------- */
+@media print {
+  .navbar-bakery, .bakery-footer, .no-print, .btn, .dashboard-sidebar {
+    display: none !important;
+  }
+  body, .dashboard-content {
+    background: #ffffff !important;
+    padding: 0 !important;
+  }
+  .card, .stat-widget {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+  }
+}

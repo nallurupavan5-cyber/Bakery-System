@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title %}System Orders | {{ bakery_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <h1 class="h3 fw-bold mb-1"><i class="bi bi-card-checklist text-warning me-2"></i> Global Order Management</h1>
+      <p class="text-muted small mb-0">Monitor all customer, POS, and custom cake transactions across the system</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- Filter Toolbar -->
+  <div class="card border-0 shadow-sm rounded-4 p-3 bg-white mb-4">
+    <form method="GET" class="row g-2 align-items-center">
+      <div class="col-md-5">
+        <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+          <option value="">All Statuses</option>
+          <option value="Pending" {% if selected_status == 'Pending' %}selected{% endif %}>Pending</option>
+          <option value="Confirmed" {% if selected_status == 'Confirmed' %}selected{% endif %}>Confirmed</option>
+          <option value="Preparing" {% if selected_status == 'Preparing' %}selected{% endif %}>Preparing</option>
+          <option value="Ready" {% if selected_status == 'Ready' %}selected{% endif %}>Ready</option>
+          <option value="Delivered" {% if selected_status == 'Delivered' %}selected{% endif %}>Delivered</option>
+          <option value="Cancelled" {% if selected_status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+        </select>
+      </div>
+      <div class="col-md-5">
+        <select name="type" class="form-select form-select-sm" onchange="this.form.submit()">
+          <option value="">All Order Types</option>
+          <option value="Online Order" {% if selected_type == 'Online Order' %}selected{% endif %}>Online Order</option>
+          <option value="Walk-in Order" {% if selected_type == 'Walk-in Order' %}selected{% endif %}>Walk-in Order</option>
+          <option value="Custom Cake Order" {% if selected_type == 'Custom Cake Order' %}selected{% endif %}>Custom Cake Order</option>
+        </select>
+      </div>
+      <div class="col-md-2 text-end">
+        <a href="{{ url_for('admin.orders') }}" class="btn btn-sm btn-outline-secondary w-100">Reset</a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Orders Table -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+    <div class="table-responsive">
+      <table class="table align-middle table-hover">
+        <thead class="table-light small text-uppercase">
+          <tr>
+            <th>Order Number</th>
+            <th>Date & Time</th>
+            <th>Type</th>
+            <th>Customer</th>
+            <th>Items</th>
+            <th>Total Amount</th>
+            <th>Payment</th>
+            <th>Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for o in orders %}
+            <tr>
+              <td>
+                <a href="{{ url_for('customer.order_details', order_id=o.order_id) }}" class="fw-bold text-decoration-none" style="color: var(--bakery-caramel);">
+                  {{ o.order_number }}
+                </a>
+              </td>
+              <td class="small text-muted">{{ o.order_date.strftime('%Y-%m-%d %H:%M') }}</td>
+              <td><span class="badge bg-light text-dark border">{{ o.order_type }}</span></td>
+              <td>{{ o.customer.name if o.customer else 'Walk-in' }}</td>
+              <td class="small">
+                {% for it in o.items %}
+                  <div>{{ it.quantity }}x {{ it.item_name }}</div>
+                {% endfor %}
+              </td>
+              <td class="fw-bold">{{ o.total_amount | currency }}</td>
+              <td>
+                <span class="badge {% if o.payment_status == 'Paid' %}bg-success-subtle text-success{% else %}bg-warning-subtle text-warning{% endif %}">
+                  {{ o.payment_status }} ({{ o.payment_mode }})
+                </span>
+              </td>
+              <td>
+                <span class="badge badge-status-{{ o.status|lower }} px-2 py-1">{{ o.status }}</span>
+              </td>
+              <td class="text-end">
+                <div class="btn-group btn-group-sm">
+                  <a href="{{ url_for('customer.order_details', order_id=o.order_id) }}" class="btn btn-outline-secondary" title="View Bill">
+                    <i class="bi bi-receipt"></i>
+                  </a>
+                  <a href="{{ url_for('customer.download_pdf_invoice', order_id=o.order_id) }}" class="btn btn-outline-dark" title="PDF">
+                    <i class="bi bi-file-earmark-pdf"></i>
+                  </a>
+                  {% if o.status != 'Cancelled' and o.status != 'Delivered' %}
+                    <form action="{{ url_for('baker.update_order_status', order_id=o.order_id) }}" method="POST" class="d-inline" onsubmit="return confirm('Cancel this order?');">
+                      <input type="hidden" name="status" value="Cancelled">
+                      <button type="submit" class="btn btn-outline-danger" title="Cancel Order">
+                        <i class="bi bi-x-circle"></i>
+                      </button>
+                    </form>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

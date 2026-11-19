@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% block title %}My Orders | {{ bakery_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <div class="mb-4">
+    <h1 class="h2 fw-bold mb-1"><i class="bi bi-bag-check me-2 text-warning"></i> My Order History</h1>
+    <p class="text-muted small">Track your freshly baked orders and custom cake preparations</p>
+  </div>
+
+  <!-- Regular Orders Section -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-5">
+    <h4 class="fw-bold mb-3 border-bottom pb-2">Online & Storefront Orders</h4>
+
+    {% if orders %}
+      <div class="table-responsive">
+        <table class="table align-middle table-hover">
+          <thead class="table-light small text-uppercase">
+            <tr>
+              <th>Order Number</th>
+              <th>Date & Time</th>
+              <th>Type</th>
+              <th>Items</th>
+              <th>Total Amount</th>
+              <th>Payment</th>
+              <th>Status</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for o in orders %}
+              <tr>
+                <td>
+                  <a href="{{ url_for('customer.order_details', order_id=o.order_id) }}" class="fw-bold text-decoration-none" style="color: var(--bakery-caramel);">
+                    {{ o.order_number }}
+                  </a>
+                </td>
+                <td class="small text-muted">
+                  {{ o.order_date.strftime('%b %d, %Y - %I:%M %p') }}
+                </td>
+                <td>
+                  <span class="badge bg-light text-dark border">{{ o.order_type }}</span>
+                </td>
+                <td class="small">
+                  {% for item in o.items %}
+                    <div>{{ item.quantity }}x {{ item.item_name }}</div>
+                  {% endfor %}
+                </td>
+                <td class="fw-bold">
+                  {{ o.total_amount | currency }}
+                </td>
+                <td>
+                  <span class="badge {% if o.payment_status == 'Paid' %}bg-success-subtle text-success{% else %}bg-warning-subtle text-warning{% endif %}">
+                    {{ o.payment_status }} ({{ o.payment_mode }})
+                  </span>
+                </td>
+                <td>
+                  <span class="badge badge-status-{{ o.status|lower }} px-2 py-1">
+                    {{ o.status }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <div class="btn-group btn-group-sm">
+                    <a href="{{ url_for('customer.order_tracking', order_number=o.order_number) }}" class="btn btn-outline-warning" title="Track Live Status">
+                      <i class="bi bi-geo-alt"></i> Track
+                    </a>
+                    <a href="{{ url_for('customer.order_details', order_id=o.order_id) }}" class="btn btn-outline-secondary" title="View Bill & Details">
+                      <i class="bi bi-receipt"></i> Details
+                    </a>
+                    <a href="{{ url_for('customer.download_pdf_invoice', order_id=o.order_id) }}" class="btn btn-outline-dark" title="Download PDF Invoice">
+                      <i class="bi bi-file-earmark-pdf"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="text-center py-4 text-muted">
+        <i class="bi bi-receipt fs-1 d-block mb-2"></i>
+        <span>You haven't placed any orders yet.</span>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Custom Cake Orders Section -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+    <h4 class="fw-bold mb-3 border-bottom pb-2">Custom Cake Requests</h4>
+
+    {% if custom_orders %}
+      <div class="table-responsive">
+        <table class="table align-middle table-hover">
+          <thead class="table-light small text-uppercase">
+            <tr>
+              <th>Request ID</th>
+              <th>Cake Type</th>
+              <th>Flavour & Size</th>
+              <th>Required Date & Time</th>
+              <th>Design Notes</th>
+              <th>Est. Price</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in custom_orders %}
+              <tr>
+                <td class="fw-bold">#CC-{{ c.custom_order_id }}</td>
+                <td>{{ c.cake_type }}</td>
+                <td>
+                  <div class="fw-semibold">{{ c.flavour }}</div>
+                  <small class="text-muted">{{ c.size }} (Qty: {{ c.quantity }})</small>
+                </td>
+                <td>
+                  <div>{{ c.required_date.strftime('%B %d, %Y') }}</div>
+                  <small class="text-muted">{{ c.required_time or 'Anytime' }}</small>
+                </td>
+                <td class="small" style="max-width: 250px;">
+                  {{ c.design_notes or 'No special message' }}
+                </td>
+                <td class="fw-bold text-success">
+                  {{ c.estimated_price | currency }}
+                </td>
+                <td>
+                  <span class="badge badge-status-{{ c.status|lower }} px-2 py-1">
+                    {{ c.status }}
+                  </span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="text-center py-4 text-muted">
+        <i class="bi bi-cake2 fs-1 d-block mb-2"></i>
+        <span>No custom cake orders currently submitted.</span>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

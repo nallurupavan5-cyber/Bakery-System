@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block title %}Track Order #{{ order.order_number }} | {{ bakery_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- Header -->
+  <div class="mb-4">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb small">
+        <li class="breadcrumb-item"><a href="{{ url_for('customer.home') }}" class="text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('customer.my_orders') }}" class="text-decoration-none">My Orders</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Track #{{ order.order_number }}</li>
+      </ol>
+    </nav>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div>
+        <h1 class="h2 fw-bold mb-1"><i class="bi bi-geo-alt-fill text-warning me-2"></i> Real-Time Order Tracking</h1>
+        <p class="text-muted small mb-0">Order #{{ order.order_number }} placed on {{ order.order_date.strftime('%B %d, %Y at %I:%M %p') }}</p>
+      </div>
+      <div>
+        <span class="badge badge-status-{{ order.status|lower }} px-3 py-2 fs-6">
+          Current Status: {{ order.status }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stepper Card -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white mb-5">
+    
+    {% if order.status == 'Cancelled' %}
+      <div class="alert alert-danger py-4 text-center rounded-3">
+        <i class="bi bi-x-octagon-fill fs-1 d-block mb-2 text-danger"></i>
+        <h4 class="fw-bold">This Order Has Been Cancelled</h4>
+        <p class="mb-0 text-muted">Please contact our bakery customer care at +1 (555) 234-5678 if you have any questions.</p>
+      </div>
+    {% else %}
+      <!-- Visual Step Progress -->
+      <div class="tracking-stepper">
+        {% set steps = [
+          ('Pending', 'bi-hourglass-split', 'Order Received', 'Your order is recorded and queued.'),
+          ('Confirmed', 'bi-check2-circle', 'Confirmed', 'Bakery accepted and scheduled order.'),
+          ('Preparing', 'bi-fire', 'In The Oven', 'Bakers are mixing, baking, and decorating.'),
+          ('Ready', 'bi-box-seam', 'Packed & Ready', 'Boxed and awaiting pickup/delivery rider.'),
+          ('Delivered', 'bi-house-check', 'Fulfilled', 'Delivered to you or collected at counter.')
+        ] %}
+
+        {% for st_name, st_icon, st_label, st_desc in steps %}
+          {% set step_idx = loop.index0 %}
+          <div class="step-item {% if step_idx == current_step %}active{% elif step_idx < current_step %}completed{% endif %}">
+            <div class="step-circle">
+              <i class="bi {{ st_icon }} fs-5"></i>
+            </div>
+            <div class="step-label">{{ st_label }}</div>
+            <div class="small text-muted d-none d-md-block" style="font-size: 0.75rem; max-width: 130px; margin: 0 auto;">
+              {{ st_desc }}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <hr class="my-4">
+
+    <!-- Order Items Brief & Summary -->
+    <div class="row g-4">
+      <div class="col-md-7">
+        <h5 class="fw-bold mb-3"><i class="bi bi-basket me-2 text-warning"></i> Order Package Items</h5>
+        <div class="list-group list-group-flush border rounded-3">
+          {% for item in order.items %}
+            <div class="list-group-item d-flex justify-content-between align-items-center py-3">
+              <div>
+                <span class="badge bg-secondary-subtle text-secondary me-2">{{ item.quantity }}x</span>
+                <strong>{{ item.item_name }}</strong>
+              </div>
+              <span class="fw-bold">{{ item.subtotal | currency }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="col-md-5">
+        <h5 class="fw-bold mb-3"><i class="bi bi-info-circle me-2 text-warning"></i> Delivery & Payment</h5>
+        <div class="border rounded-3 p-3 bg-light">
+          <div class="mb-2 small">
+            <strong>Customer:</strong> {{ order.customer.name if order.customer else 'Walk-in Customer' }}
+          </div>
+          <div class="mb-2 small">
+            <strong>Delivery Address:</strong> {{ order.customer.address if order.customer and order.customer.address else 'Counter Pickup' }}
+          </div>
+          <div class="mb-2 small">
+            <strong>Payment Mode:</strong> {{ order.payment_mode }} ({{ order.payment_status }})
+          </div>
+          <div class="mb-2 small">
+            <strong>Total Amount:</strong> <span class="fw-bold text-success">{{ order.total_amount | currency }}</span>
+          </div>
+          {% if order.special_instructions %}
+            <div class="mt-2 pt-2 border-top small text-muted">
+              <strong>Instructions:</strong> {{ order.special_instructions }}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center mt-5">
+      <a href="{{ url_for('customer.order_details', order_id=order.order_id) }}" class="btn btn-outline-bakery me-2">
+        <i class="bi bi-receipt me-1"></i> View Full Bill
+      </a>
+      <a href="{{ url_for('customer.download_pdf_invoice', order_id=order.order_id) }}" class="btn btn-outline-dark">
+        <i class="bi bi-file-earmark-pdf me-1"></i> Download Invoice PDF
+      </a>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}Invoice #{{ order.bill.invoice_number if order.bill else order.order_number }} | {{ bakery_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- Action Bar -->
+  <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+    <div>
+      <a href="{{ url_for('cashier.pos') }}" class="btn btn-outline-bakery btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Return to POS Terminal
+      </a>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-bakery btn-sm" onclick="window.print()">
+        <i class="bi bi-printer me-1"></i> Print Receipt
+      </button>
+      <a href="{{ url_for('customer.download_pdf_invoice', order_id=order.order_id) }}" class="btn btn-outline-dark btn-sm">
+        <i class="bi bi-file-earmark-pdf me-1"></i> Download PDF
+      </a>
+      <button class="btn btn-caramel btn-sm" onclick="shareInvoice('{{ order.bill.invoice_number if order.bill else order.order_number }}', '{{ order.total_amount }}')">
+        <i class="bi bi-share me-1"></i> Share Invoice
+      </button>
+    </div>
+  </div>
+
+  <!-- Thermal/Standard Invoice Docket Preview -->
+  <div class="card border shadow-sm rounded-4 p-4 p-md-5 bg-white mx-auto" style="max-width: 650px;">
+    
+    <!-- Receipt Header -->
+    <div class="text-center border-bottom pb-3 mb-3">
+      <i class="bi bi-cake2 fs-1" style="color: var(--bakery-caramel);"></i>
+      <h3 class="fw-bold font-serif mb-1">{{ bakery_name }}</h3>
+      <p class="text-muted small mb-1">{{ bakery_address }}</p>
+      <p class="text-muted small mb-0">Phone: {{ bakery_phone }} | Email: {{ bakery_email }}</p>
+    </div>
+
+    <!-- Meta Details -->
+    <div class="d-flex justify-content-between small text-muted mb-2">
+      <span><strong>Invoice #:</strong> {{ order.bill.invoice_number if order.bill else 'INV-' + order.order_number }}</span>
+      <span><strong>Date:</strong> {{ order.order_date.strftime('%Y-%m-%d %H:%M') }}</span>
+    </div>
+    <div class="d-flex justify-content-between small text-muted mb-3">
+      <span><strong>Customer:</strong> {{ order.customer.name if order.customer else 'Walk-in Customer' }}</span>
+      <span><strong>Type:</strong> {{ order.order_type }}</span>
+    </div>
+
+    <div class="border-top border-bottom py-2 my-2">
+      <div class="d-flex justify-content-between small fw-bold text-uppercase">
+        <span style="flex: 2;">Item</span>
+        <span style="flex: 1; text-align: center;">Qty</span>
+        <span style="flex: 1; text-align: right;">Price</span>
+        <span style="flex: 1; text-align: right;">Total</span>
+      </div>
+    </div>
+
+    <!-- Line items -->
+    <div class="mb-3">
+      {% for item in order.items %}
+        <div class="d-flex justify-content-between py-1 small">
+          <span style="flex: 2;">{{ item.item_name }}</span>
+          <span style="flex: 1; text-align: center;">{{ item.quantity }}</span>
+          <span style="flex: 1; text-align: right;">{{ item.price | currency }}</span>
+          <span style="flex: 1; text-align: right; font-weight: 600;">{{ item.subtotal | currency }}</span>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Calculations -->
+    <div class="border-top pt-2">
+      <div class="d-flex justify-content-between small mb-1">
+        <span>Subtotal:</span>
+        <span class="fw-semibold">{{ order.subtotal | currency }}</span>
+      </div>
+      <div class="d-flex justify-content-between small mb-1">
+        <span>Discount:</span>
+        <span class="fw-semibold text-success">-{{ order.discount | currency }}</span>
+      </div>
+      <div class="d-flex justify-content-between small mb-2">
+        <span>Tax:</span>
+        <span class="fw-semibold">+{{ order.tax | currency }}</span>
+      </div>
+      <div class="d-flex justify-content-between fs-5 fw-bold border-top pt-2">
+        <span>Grand Total:</span>
+        <span style="color: var(--bakery-caramel);">{{ order.total_amount | currency }}</span>
+      </div>
+      <div class="d-flex justify-content-between small text-muted mt-2">
+        <span>Payment Method:</span>
+        <span class="fw-bold">{{ order.payment_mode }} ({{ order.payment_status }})</span>
+      </div>
+    </div>
+
+    <!-- Footer Note -->
+    <div class="text-center text-muted small border-top pt-3 mt-4">
+      <p class="mb-1 font-serif fst-italic">Freshly Baked With Love. Visit Us Again!</p>
+      <p class="mb-0" style="font-size: 0.7rem;">Order processed by Staff ID #{{ order.created_by_user_id or 'POS' }}</p>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

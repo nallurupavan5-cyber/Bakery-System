@@ -1,0 +1,10 @@
+[build]
+  publish = "netlify/public"
+
+# Send every request to the Flask backend hosted on Render.
+# Replace the onrender.com hostname with your own Render service name.
+[[redirects]]
+  from = "/*"
+  to = "https://sweet-delights-bms.onrender.com/:splat"
+  status = 200
+  force = true
