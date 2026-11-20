@@ -1,13 +1,48 @@
-# Secrets and local database
-.env
-bakery.db
-
 # Python
 __pycache__/
 *.py[cod]
-.pytest_cache/
-venv/
+*.pyc
+*.pyo
+*.pyd
+.Python
 
-# Uploaded files (sample images only, no user uploads)
-static/uploads/*
-!static/uploads/.gitkeep
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Environment files (keep .env.example)
+.env
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploaded files (ephemeral on Render)
+static/uploads/
+
+# Testing
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

@@ -126,4 +126,4 @@ if __name__ == '__main__':
     print("   Store Keeper:  store / store123")
     print("   Customer:      customer / customer123")
     print("=" * 60)
-    application.run(host='0.0.0.0', port=5000, debug=True)
+    application.run(host='0.0.0.0', port=5000, debug=os.environ.get('FLASK_DEBUG', 'false').lower() == 'true')

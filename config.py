@@ -31,7 +31,9 @@ class Config:
     MYSQL_DATABASE = os.environ.get('MYSQL_DATABASE', 'bakery_db')
     
     if DATABASE_URL:
-        # Normalize postgres/mysql URL prefixes if needed
+        # Render gives postgres:// but SQLAlchemy needs postgresql://
+        if DATABASE_URL.startswith('postgres://'):
+            DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
         SQLALCHEMY_DATABASE_URI = DATABASE_URL
     elif os.environ.get('USE_MYSQL', '').lower() in ('1', 'true', 'yes'):
         pwd = f":{MYSQL_PASSWORD}" if MYSQL_PASSWORD else ""
@@ -46,7 +48,7 @@ class Config:
     SQLALCHEMY_ENGINE_OPTIONS = {
         'pool_recycle': 280,
         'pool_pre_ping': True,
-    } if 'mysql' in SQLALCHEMY_DATABASE_URI else {}
+    } if ('mysql' in SQLALCHEMY_DATABASE_URI or 'postgresql' in SQLALCHEMY_DATABASE_URI) else {}
 
     # File Uploads
     UPLOAD_FOLDER = os.path.join(basedir, 'static', 'uploads')
