@@ -358,3 +358,5 @@ For college project presentation and review, follow these scenarios:
 
 ## 📄 License & Academic Attribution
 Developed for the **Software Engineering Project Evaluation**. Demonstrates full-stack modular architecture, relational database modeling, role-based authorization, Point of Sale hardware integration readiness, and modern responsive design.
+#   - s w e e t - d e l i g h t s - b m s  
+ 
