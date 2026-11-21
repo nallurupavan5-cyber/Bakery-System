@@ -1,4 +1,4 @@
-import os
+﻿import os
 from flask import Flask
 from extensions import db, migrate, login_manager
 from config import Config
@@ -18,7 +18,7 @@ def create_app():
         admin, api, auth, baker, cashier,
         customer, inventory, manager
     )
-    app.register_blueprint(admin.bp)
+    app.register_blueprint(admin.admin_bp)
     app.register_blueprint(api.bp)
     app.register_blueprint(auth.bp)
     app.register_blueprint(baker.bp)
@@ -30,10 +30,11 @@ def create_app():
     return app
 
 # ----------------------------------------------------------------------
-# Optional convenience for local development – not used by Render
+# Optional convenience for local development â€“ not used by Render
 # ----------------------------------------------------------------------
 if __name__ == "__main__":
     # When you run `python app.py` locally you get the dev server.
     app = create_app()
     port = int(os.getenv("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=False)
+
