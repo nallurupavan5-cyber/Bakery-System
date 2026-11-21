@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+{% block title %}Management Reports & Export | {{ bakery_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- Header -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 no-print">
+    <div>
+      <h1 class="h3 fw-bold mb-1"><i class="bi bi-file-earmark-bar-graph text-warning me-2"></i> Bakery Financial & Operational Reports</h1>
+      <p class="text-muted small mb-0">Generate audits, sales summaries, inventory health reports, and export to CSV</p>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">
+        <i class="bi bi-printer me-1"></i> Print Report
+      </button>
+      <a href="{{ url_for('manager.export_csv', report_type=report_type, start_date=start_date, end_date=end_date) }}" class="btn btn-caramel btn-sm">
+        <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export to CSV
+      </a>
+      <a href="{{ url_for('manager.dashboard') }}" class="btn btn-outline-dark btn-sm">
+        <i class="bi bi-graph-up me-1"></i> Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- Filter Controls Card -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4 no-print">
+    <form method="GET" action="{{ url_for('manager.reports') }}">
+      <div class="row g-3 align-items-end">
+        
+        <!-- Report Type -->
+        <div class="col-md-4">
+          <label class="form-label small fw-semibold">Report Module</label>
+          <select name="report_type" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="sales" {% if report_type == 'sales' %}selected{% endif %}>Sales & Revenue Report</option>
+            <option value="orders" {% if report_type == 'orders' %}selected{% endif %}>Orders Audit Report</option>
+            <option value="products" {% if report_type == 'products' %}selected{% endif %}>Product Performance & Demand</option>
+            <option value="inventory" {% if report_type == 'inventory' %}selected{% endif %}>Raw Material Inventory Status</option>
+            <option value="low_stock" {% if report_type == 'low_stock' %}selected{% endif %}>Low Stock Deficit Report</option>
+          </select>
+        </div>
+
+        <!-- Date Range Filter -->
+        <div class="col-md-3">
+          <label class="form-label small fw-semibold">Date Interval</label>
+          <select name="date_filter" id="dateFilterSelect" class="form-select form-select-sm" onchange="toggleCustomDates(this.value)">
+            <option value="today" {% if date_filter == 'today' %}selected{% endif %}>Today</option>
+            <option value="yesterday" {% if date_filter == 'yesterday' %}selected{% endif %}>Yesterday</option>
+            <option value="this_week" {% if date_filter == 'this_week' %}selected{% endif %}>This Week (7 Days)</option>
+            <option value="this_month" {% if date_filter == 'this_month' %}selected{% endif %}>This Month</option>
+            <option value="custom" {% if date_filter == 'custom' %}selected{% endif %}>Custom Range...</option>
+          </select>
+        </div>
+
+        <!-- Custom Dates (Conditional) -->
+        <div class="col-md-3" id="customDateCol" style="{% if date_filter != 'custom' %}display: none;{% endif %}">
+          <label class="form-label small fw-semibold">From / To Dates</label>
+          <div class="input-group input-group-sm">
+            <input type="date" name="start_date" value="{{ start_date }}" class="form-control">
+            <input type="date" name="end_date" value="{{ end_date }}" class="form-control">
+          </div>
+        </div>
+
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-caramel btn-sm w-100">
+            <i class="bi bi-funnel me-1"></i> Apply Filter
+          </button>
+        </div>
+
+      </div>
+    </form>
+  </div>
+
+  <!-- Report Data Container -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+    
+    <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+      <div>
+        <h5 class="fw-bold mb-0 text-uppercase" style="letter-spacing: 0.05em;">
+          Report: {{ report_type | replace('_', ' ') }}
+        </h5>
+        <small class="text-muted">Generated: {{ report_type }} | Filter: {{ date_filter }}</small>
+      </div>
+    </div>
+
+    <!-- Case 1: Orders / Sales Report -->
+    {% if report_type in ('sales', 'orders') %}
+      {% if orders %}
+        <div class="table-responsive">
+          <table class="table align-middle table-hover">
+            <thead class="table-light small text-uppercase">
+              <tr>
+                <th>Order #</th>
+                <th>Date & Time</th>
+                <th>Type</th>
+                <th>Customer</th>
+                <th>Subtotal</th>
+                <th>Discount</th>
+                <th>Tax</th>
+                <th>Total</th>
+                <th>Payment</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for o in orders %}
+                <tr>
+                  <td class="fw-bold">{{ o.order_number }}</td>
+                  <td class="small text-muted">{{ o.order_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                  <td><span class="badge bg-light text-dark border">{{ o.order_type }}</span></td>
+                  <td>{{ o.customer.name if o.customer else 'Walk-in' }}</td>
+                  <td>{{ o.subtotal | currency }}</td>
+                  <td class="text-success">-{{ o.discount | currency }}</td>
+                  <td>+{{ o.tax | currency }}</td>
+                  <td class="fw-bold text-success">{{ o.total_amount | currency }}</td>
+                  <td>
+                    <span class="badge {% if o.payment_status == 'Paid' %}bg-success-subtle text-success{% else %}bg-warning-subtle text-warning{% endif %}">
+                      {{ o.payment_status }} ({{ o.payment_mode }})
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge badge-status-{{ o.status|lower }} px-2 py-1">{{ o.status }}</span>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="text-center py-5 text-muted">No records match this date filter.</div>
+      {% endif %}
+
+    <!-- Case 2: Products Performance Report -->
+    {% elif report_type == 'products' %}
+      <div class="table-responsive">
+        <table class="table align-middle table-hover">
+          <thead class="table-light small text-uppercase">
+            <tr>
+              <th>ID</th>
+              <th>Product Name</th>
+              <th>Category</th>
+              <th>Unit Price</th>
+              <th>Availability</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in products %}
+              <tr>
+                <td>#{{ p.product_id }}</td>
+                <td class="fw-bold">{{ p.name }}</td>
+                <td>{{ p.category.name if p.category else 'N/A' }}</td>
+                <td class="fw-semibold">{{ p.price | currency }}</td>
+                <td>
+                  {% if p.availability %}
+                    <span class="badge bg-success-subtle text-success">Active / Available</span>
+                  {% else %}
+                    <span class="badge bg-danger-subtle text-danger">Unavailable</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+    <!-- Case 3: Inventory / Low Stock Report -->
+    {% elif report_type in ('inventory', 'low_stock') %}
+      <div class="table-responsive">
+        <table class="table align-middle table-hover">
+          <thead class="table-light small text-uppercase">
+            <tr>
+              <th>Ingredient ID</th>
+              <th>Name</th>
+              <th>Available Quantity</th>
+              <th>Unit</th>
+              <th>Reorder Level</th>
+              <th>Supplier</th>
+              <th>Unit Cost</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for ing in inventory %}
+              <tr class="{% if ing.is_low_stock %}table-warning{% endif %}">
+                <td>#{{ ing.ingredient_id }}</td>
+                <td class="fw-bold">{{ ing.name }}</td>
+                <td class="fw-bold">{{ ing.quantity_available }}</td>
+                <td><span class="badge bg-light text-dark border">{{ ing.unit }}</span></td>
+                <td>{{ ing.reorder_level }} {{ ing.unit }}</td>
+                <td>{{ ing.supplier.name if ing.supplier else 'None' }}</td>
+                <td>{{ ing.cost | currency }}</td>
+                <td>
+                  {% if ing.is_low_stock %}
+                    <span class="badge badge-low-stock px-2 py-1">LOW STOCK</span>
+                  {% else %}
+                    <span class="badge bg-success-subtle text-success">Adequate</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleCustomDates(val) {
+  const col = document.getElementById('customDateCol');
+  if (val === 'custom') {
+    col.style.display = 'block';
+  } else {
+    col.style.display = 'none';
+    document.querySelector('form').submit();
+  }
+}
+</script>
+{% endblock %}

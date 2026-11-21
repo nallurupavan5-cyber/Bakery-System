@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% block title %}Checkout | {{ bakery_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <div class="mb-4">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb small">
+        <li class="breadcrumb-item"><a href="{{ url_for('customer.home') }}" class="text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('customer.cart') }}" class="text-decoration-none">Cart</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Checkout</li>
+      </ol>
+    </nav>
+    <h1 class="h2 fw-bold mb-1"><i class="bi bi-shield-check text-success me-2"></i> Secure Checkout</h1>
+    <p class="text-muted small">Provide your delivery details and choose your preferred payment method</p>
+  </div>
+
+  <form method="POST" action="{{ url_for('customer.checkout') }}">
+    <div class="row g-4">
+      
+      <!-- Customer & Delivery Details -->
+      <div class="col-lg-7">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+          <h4 class="fw-bold mb-3 border-bottom pb-2">
+            <i class="bi bi-person-lines-fill me-2 text-warning"></i> Customer Information
+          </h4>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Full Name <span class="text-danger">*</span></label>
+              <input type="text" name="name" class="form-control bg-light" 
+                     value="{{ customer.name if customer else '' }}" required placeholder="e.g. Jane Doe">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Phone Number <span class="text-danger">*</span></label>
+              <input type="tel" name="phone" class="form-control bg-light" 
+                     value="{{ customer.phone if customer else '' }}" required placeholder="+1 (555) 000-0000">
+            </div>
+
+            <div class="col-12">
+              <label class="form-label small fw-semibold">Email Address</label>
+              <input type="email" name="email" class="form-control bg-light" 
+                     value="{{ customer.email if customer and customer.email else '' }}" placeholder="For invoice receipt">
+            </div>
+
+            <div class="col-12">
+              <label class="form-label small fw-semibold">Delivery / Street Address</label>
+              <textarea name="address" class="form-control bg-light" rows="3" placeholder="Leave blank if picking up at counter">{{ customer.address if customer and customer.address else '' }}</textarea>
+              <div class="form-text small">Enter "Counter Pickup" if you wish to pick up at the bakery.</div>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label small fw-semibold">Special Instructions for Bakers</label>
+              <textarea name="special_instructions" class="form-control bg-light" rows="2" placeholder="e.g. Please slice bread, package separately, add birthday candles"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Method Selection -->
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+          <h4 class="fw-bold mb-3 border-bottom pb-2">
+            <i class="bi bi-credit-card me-2 text-warning"></i> Payment Method
+          </h4>
+
+          <div class="row g-3">
+            <div class="col-md-4">
+              <div class="border rounded-3 p-3 text-center h-100 bg-light">
+                <input class="form-check-input mb-2" type="radio" name="payment_mode" id="payCash" value="Cash" checked>
+                <label class="d-block form-check-label fw-bold" for="payCash">
+                  <i class="bi bi-cash-stack fs-3 d-block text-success mb-1"></i> Cash
+                </label>
+                <small class="text-muted" style="font-size: 0.75rem;">Pay upon pickup/delivery</small>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="border rounded-3 p-3 text-center h-100 bg-light">
+                <input class="form-check-input mb-2" type="radio" name="payment_mode" id="payCard" value="Card">
+                <label class="d-block form-check-label fw-bold" for="payCard">
+                  <i class="bi bi-credit-card-2-front fs-3 d-block text-primary mb-1"></i> Card
+                </label>
+                <small class="text-muted" style="font-size: 0.75rem;">Debit / Credit card</small>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="border rounded-3 p-3 text-center h-100 bg-light">
+                <input class="form-check-input mb-2" type="radio" name="payment_mode" id="payUPI" value="UPI">
+                <label class="d-block form-check-label fw-bold" for="payUPI">
+                  <i class="bi bi-qr-code-scan fs-3 d-block text-warning mb-1"></i> UPI
+                </label>
+                <small class="text-muted" style="font-size: 0.75rem;">Instant digital QR / app</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Summary Column -->
+      <div class="col-lg-5">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white sticky-top" style="top: 85px;">
+          <h4 class="fw-bold mb-3 border-bottom pb-2">Order Items ({{ items|length }})</h4>
+
+          <div class="mb-3" style="max-height: 250px; overflow-y: auto;">
+            {% for it in items %}
+              <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                <div>
+                  <div class="fw-semibold">{{ it.product.name }}</div>
+                  <small class="text-muted">Qty: {{ it.quantity }} × {{ it.product.price | currency }}</small>
+                </div>
+                <div class="fw-bold">{{ it.subtotal | currency }}</div>
+              </div>
+            {% endfor %}
+          </div>
+
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Subtotal</span>
+            <span class="fw-bold">{{ totals.subtotal | currency }}</span>
+          </div>
+
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Discount</span>
+            <span class="fw-bold text-success">-{{ totals.discount | currency }}</span>
+          </div>
+
+          <div class="d-flex justify-content-between mb-3">
+            <span class="text-muted">Estimated Tax ({{ totals.tax_percent }}%)</span>
+            <span class="fw-bold">+{{ totals.tax | currency }}</span>
+          </div>
+
+          <hr>
+
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <span class="fs-5 fw-bold">Grand Total</span>
+            <span class="fs-3 fw-bold" style="color: var(--bakery-caramel);">
+              {{ totals.total_amount | currency }}
+            </span>
+          </div>
+
+          <button type="submit" class="btn btn-caramel btn-lg w-100 py-3 fw-bold shadow-sm">
+            <i class="bi bi-check-circle me-2"></i> Confirm & Place Order
+          </button>
+
+          <p class="text-center text-muted small mt-3 mb-0">
+            By placing this order, you agree to our bakery terms of service and freshness guarantee.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </form>
+
+</div>
+{% endblock %}

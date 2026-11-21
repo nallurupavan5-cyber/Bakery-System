@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% block title %}Our Menu & Catalog | {{ bakery_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- Header & Breadcrumb -->
+  <div class="mb-4">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb small">
+        <li class="breadcrumb-item"><a href="{{ url_for('customer.home') }}" class="text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Menu</li>
+      </ol>
+    </nav>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div>
+        <h1 class="h2 fw-bold mb-1">Artisan Bakery Catalog</h1>
+        <p class="text-muted small mb-0">Browse our selection of cakes, crusty breads, delicate pastries, and cookies</p>
+      </div>
+      <div>
+        <span class="badge bg-light text-dark border px-3 py-2">
+          <strong>{{ products|length }}</strong> items available
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Sidebar Filters -->
+    <div class="col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 p-4 sticky-top" style="top: 85px;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0"><i class="bi bi-funnel me-1 text-warning"></i> Filter Menu</h5>
+          <a href="{{ url_for('customer.menu') }}" class="small text-muted text-decoration-none">Reset</a>
+        </div>
+
+        <form method="GET" action="{{ url_for('customer.menu') }}">
+          <!-- Search input -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Search by Name</label>
+            <div class="input-group">
+              <input type="text" name="search" value="{{ search_query }}" class="form-control form-control-sm" placeholder="e.g. Truffle, Croissant">
+              <button class="btn btn-sm btn-outline-secondary" type="submit"><i class="bi bi-search"></i></button>
+            </div>
+          </div>
+
+          <!-- Category filter -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Category</label>
+            <select name="category" class="form-select form-select-sm" onchange="this.form.submit()">
+              <option value="">All Categories</option>
+              {% for cat in categories %}
+                <option value="{{ cat.category_id }}" {% if selected_category == cat.category_id %}selected{% endif %}>
+                  {{ cat.name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Price filter -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Price Range ($)</label>
+            <div class="row g-2">
+              <div class="col-6">
+                <input type="number" step="0.5" name="min_price" value="{{ min_price }}" class="form-control form-control-sm" placeholder="Min">
+              </div>
+              <div class="col-6">
+                <input type="number" step="0.5" name="max_price" value="{{ max_price }}" class="form-control form-control-sm" placeholder="Max">
+              </div>
+            </div>
+          </div>
+
+          <!-- Availability filter -->
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Availability</label>
+            <select name="availability" class="form-select form-select-sm" onchange="this.form.submit()">
+              <option value="" {% if availability == '' %}selected{% endif %}>All Items</option>
+              <option value="1" {% if availability == '1' %}selected{% endif %}>In Stock Only</option>
+              <option value="0" {% if availability == '0' %}selected{% endif %}>Out of Stock</option>
+            </select>
+          </div>
+
+          <!-- Sorting -->
+          <div class="mb-4">
+            <label class="form-label small fw-semibold">Sort By</label>
+            <select name="sort" class="form-select form-select-sm" onchange="this.form.submit()">
+              <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest Additions</option>
+              <option value="price_low" {% if sort_by == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+              <option value="price_high" {% if sort_by == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+              <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Alphabetical (A - Z)</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-caramel btn-sm w-100">
+            Apply Filters
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Product Grid -->
+    <div class="col-lg-9">
+      {% if products %}
+        <div class="row g-4">
+          {% for product in products %}
+            <div class="col-12 col-sm-6 col-md-4">
+              <div class="bakery-card product-card h-100">
+                <div class="product-img-wrapper">
+                  <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=500&q=80" 
+                       alt="{{ product.name }}" class="product-img">
+                  <span class="product-badge-category">{{ product.category.name }}</span>
+                  {% if product.availability %}
+                    <span class="badge bg-success product-badge-stock">In Stock</span>
+                  {% else %}
+                    <span class="badge bg-danger product-badge-stock">Sold Out</span>
+                  {% endif %}
+                </div>
+                <div class="p-3 d-flex flex-column flex-grow-1">
+                  <h5 class="fw-bold mb-1 text-truncate">{{ product.name }}</h5>
+                  <p class="text-muted small flex-grow-1 mb-2">{{ product.description | truncate(70) }}</p>
+                  
+                  <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+                    <span class="fs-5 fw-bold" style="color: var(--bakery-caramel);">{{ product.price | currency }}</span>
+                    <div class="d-flex gap-1">
+                      <a href="{{ url_for('customer.product_details', product_id=product.product_id) }}" class="btn btn-sm btn-outline-secondary" title="View details">
+                        <i class="bi bi-eye"></i> Details
+                      </a>
+                      {% if product.availability %}
+                        <form action="{{ url_for('customer.cart_add') }}" method="POST">
+                          <input type="hidden" name="product_id" value="{{ product.product_id }}">
+                          <input type="hidden" name="quantity" value="1">
+                          <button type="submit" class="btn btn-sm btn-bakery" title="Add to cart">
+                            <i class="bi bi-cart-plus"></i> Add
+                          </button>
+                        </form>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="card border-0 rounded-4 shadow-sm text-center py-5">
+          <div class="py-4">
+            <i class="bi bi-search fs-1 text-muted d-block mb-3"></i>
+            <h4 class="fw-bold">No Products Match Your Criteria</h4>
+            <p class="text-muted small mb-4">Try clearing some filters or searching with a different term.</p>
+            <a href="{{ url_for('customer.menu') }}" class="btn btn-outline-bakery">
+              Reset Filters
+            </a>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

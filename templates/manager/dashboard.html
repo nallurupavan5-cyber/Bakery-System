@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+{% block title %}Manager Analytics Dashboard | {{ bakery_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 px-md-4">
+
+  <!-- Header -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <h1 class="h3 fw-bold mb-1"><i class="bi bi-graph-up text-warning me-2"></i> Manager Analytics Dashboard</h1>
+      <p class="text-muted small mb-0">Live bakery performance indicators, sales distributions, and supply health</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('manager.reports') }}" class="btn btn-caramel btn-sm">
+        <i class="bi bi-file-earmark-bar-graph me-1"></i> Financial Reports & Export
+      </a>
+      <button class="btn btn-outline-secondary btn-sm" onclick="window.location.reload()">
+        <i class="bi bi-arrow-clockwise me-1"></i> Refresh Data
+      </button>
+    </div>
+  </div>
+
+  <!-- KPI Metrics Grid -->
+  <div class="row g-3 mb-4">
+    <!-- Today's Sales -->
+    <div class="col-sm-6 col-lg-3">
+      <div class="stat-widget">
+        <div>
+          <span class="text-muted small fw-semibold">Today's Sales</span>
+          <h3 class="fw-bold mb-0 text-success">${{ "%.2f"|format(summary.today_sales) }}</h3>
+          <small class="text-muted">{{ summary.today_orders }} orders today</small>
+        </div>
+        <div class="stat-icon green"><i class="bi bi-cash-stack"></i></div>
+      </div>
+    </div>
+
+    <!-- Weekly Sales -->
+    <div class="col-sm-6 col-lg-3">
+      <div class="stat-widget">
+        <div>
+          <span class="text-muted small fw-semibold">Weekly Sales (7d)</span>
+          <h3 class="fw-bold mb-0" style="color: var(--bakery-caramel);">${{ "%.2f"|format(summary.weekly_sales) }}</h3>
+          <small class="text-muted">Last 7 rolling days</small>
+        </div>
+        <div class="stat-icon caramel"><i class="bi bi-calendar-week"></i></div>
+      </div>
+    </div>
+
+    <!-- Monthly Sales -->
+    <div class="col-sm-6 col-lg-3">
+      <div class="stat-widget">
+        <div>
+          <span class="text-muted small fw-semibold">Monthly Sales</span>
+          <h3 class="fw-bold mb-0 text-primary">${{ "%.2f"|format(summary.monthly_sales) }}</h3>
+          <small class="text-muted">Current calendar month</small>
+        </div>
+        <div class="stat-icon blue"><i class="bi bi-calendar-month"></i></div>
+      </div>
+    </div>
+
+    <!-- Low Stock Alert -->
+    <div class="col-sm-6 col-lg-3">
+      <div class="stat-widget">
+        <div>
+          <span class="text-muted small fw-semibold">Low Stock Materials</span>
+          <h3 class="fw-bold mb-0 {% if summary.low_stock_count > 0 %}text-danger{% else %}text-success{% endif %}">
+            {{ summary.low_stock_count }}
+          </h3>
+          <small class="text-muted">Threshold breached</small>
+        </div>
+        <div class="stat-icon red"><i class="bi bi-exclamation-triangle"></i></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Secondary Metrics: Orders & Customers -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white text-center">
+        <span class="text-muted small">Pending Kitchen Queue</span>
+        <h4 class="fw-bold text-warning mb-0">{{ summary.pending_orders }}</h4>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white text-center">
+        <span class="text-muted small">Completed Deliveries</span>
+        <h4 class="fw-bold text-success mb-0">{{ summary.completed_orders }}</h4>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white text-center">
+        <span class="text-muted small">Active Products in Catalog</span>
+        <h4 class="fw-bold mb-0">{{ summary.total_products }}</h4>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white text-center">
+        <span class="text-muted small">Registered Customers</span>
+        <h4 class="fw-bold mb-0">{{ summary.total_customers }}</h4>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row 1: Daily Sales & Order Status -->
+  <div class="row g-4 mb-4">
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0"><i class="bi bi-graph-up-arrow me-1 text-warning"></i> 1. Daily Sales Trend (Last 7 Days)</h5>
+          <span class="badge bg-light text-dark border">Revenue ($)</span>
+        </div>
+        <div style="height: 280px;">
+          <canvas id="dailySalesChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+        <h5 class="fw-bold mb-3"><i class="bi bi-pie-chart me-1 text-warning"></i> 4. Orders by Status</h5>
+        <div style="height: 280px; position: relative;">
+          <canvas id="orderStatusChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row 2: Weekly & Monthly Sales -->
+  <div class="row g-4 mb-4">
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+        <h5 class="fw-bold mb-3"><i class="bi bi-bar-chart me-1 text-warning"></i> 2. Weekly Sales Performance (Last 4 Weeks)</h5>
+        <div style="height: 250px;">
+          <canvas id="weeklySalesChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+        <h5 class="fw-bold mb-3"><i class="bi bi-bar-chart-fill me-1 text-warning"></i> 3. Monthly Sales Volume (Last 6 Months)</h5>
+        <div style="height: 250px;">
+          <canvas id="monthlySalesChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row 3: Top Products, Category Sales, Inventory Reorder Levels -->
+  <div class="row g-4 mb-4">
+    <!-- Top-selling products -->
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+        <h5 class="fw-bold mb-3"><i class="bi bi-star-fill text-warning me-1"></i> 5. Top-Selling Products</h5>
+        <div style="height: 260px;">
+          <canvas id="topProductsChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sales by category -->
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+        <h5 class="fw-bold mb-3"><i class="bi bi-pie-chart-fill text-warning me-1"></i> 6. Sales by Category</h5>
+        <div style="height: 260px;">
+          <canvas id="salesCategoryChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inventory stock levels -->
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+        <h5 class="fw-bold mb-3"><i class="bi bi-boxes text-warning me-1"></i> 7. Stock vs Reorder Level</h5>
+        <div style="height: 260px;">
+          <canvas id="inventoryChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Transactions Table -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+    <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+      <h5 class="fw-bold mb-0">Recent Order Activity</h5>
+      <a href="{{ url_for('manager.reports') }}" class="btn btn-sm btn-outline-secondary">View Complete Log</a>
+    </div>
+    <div class="table-responsive">
+      <table class="table align-middle table-hover">
+        <thead class="table-light small text-uppercase">
+          <tr>
+            <th>Order #</th>
+            <th>Date & Time</th>
+            <th>Customer</th>
+            <th>Type</th>
+            <th>Total Amount</th>
+            <th>Payment</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for o in recent_orders %}
+            <tr>
+              <td class="fw-bold">{{ o.order_number }}</td>
+              <td class="small text-muted">{{ o.order_date.strftime('%Y-%m-%d %H:%M') }}</td>
+              <td>{{ o.customer.name if o.customer else 'Walk-in' }}</td>
+              <td><span class="badge bg-light text-dark border">{{ o.order_type }}</span></td>
+              <td class="fw-bold">{{ o.total_amount | currency }}</td>
+              <td>
+                <span class="badge {% if o.payment_status == 'Paid' %}bg-success-subtle text-success{% else %}bg-warning-subtle text-warning{% endif %}">
+                  {{ o.payment_status }} ({{ o.payment_mode }})
+                </span>
+              </td>
+              <td>
+                <span class="badge badge-status-{{ o.status|lower }} px-2 py-1">{{ o.status }}</span>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const rawData = {{ charts_data | tojson }};
+    initBakeryCharts(rawData);
+  });
+</script>
+{% endblock %}

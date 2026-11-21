@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% block title %}Cashier POS | {{ bakery_name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pos.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="pos-container">
+  
+  <!-- Left Side: Product Grid & Search -->
+  <div class="pos-products-pane">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+      <div>
+        <h2 class="h4 fw-bold mb-0"><i class="bi bi-calculator text-warning me-2"></i> Cashier POS Terminal</h2>
+        <small class="text-muted">Fast in-store billing and order ticket processing</small>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="{{ url_for('cashier.orders') }}" class="btn btn-sm btn-outline-secondary">
+          <i class="bi bi-list-check me-1"></i> Orders
+        </a>
+        <a href="{{ url_for('cashier.invoices') }}" class="btn btn-sm btn-outline-secondary">
+          <i class="bi bi-receipt me-1"></i> Invoices
+        </a>
+      </div>
+    </div>
+
+    <!-- Search & Category Filters -->
+    <div class="row g-2 mb-3">
+      <div class="col-md-7">
+        <div class="input-group">
+          <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+          <input type="text" id="posProductSearch" class="form-control border-start-0" placeholder="Search product by name or category...">
+        </div>
+      </div>
+      <div class="col-md-5">
+        <div class="d-flex gap-1 overflow-auto pb-1">
+          <button class="btn btn-sm btn-outline-secondary pos-cat-pill active text-nowrap" data-cat-id="">All</button>
+          {% for cat in categories %}
+            <button class="btn btn-sm btn-outline-secondary pos-cat-pill text-nowrap" data-cat-id="{{ cat.category_id }}">{{ cat.name }}</button>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Product Tiles Grid -->
+    <div class="row g-3" id="posProductsGrid">
+      {% for product in products %}
+        <div class="col-6 col-sm-4 col-md-3 pos-tile-item" 
+             data-name="{{ product.name }}" 
+             data-category="{{ product.category.name }}"
+             data-cat-id="{{ product.category_id }}">
+          <div class="pos-product-tile" onclick="POS.addItem({{ product.product_id }}, '{{ product.name | replace("'", "\\'") }}', {{ product.price }})">
+            <div>
+              <div class="tile-title text-truncate">{{ product.name }}</div>
+              <small class="text-muted d-block mb-2">{{ product.category.name }}</small>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
+              <span class="tile-price">{{ product.price | currency }}</span>
+              <span class="btn btn-sm btn-light border py-0 px-2 fw-bold text-success">+ Add</span>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Right Side: POS Billing Docket / Cart -->
+  <div class="pos-cart-pane">
+    
+    <!-- Cart Header -->
+    <div class="pos-cart-header">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 class="fw-bold mb-0"><i class="bi bi-receipt me-1 text-warning"></i> Current Docket</h5>
+        <button class="btn btn-sm text-danger border-0 p-0" onclick="POS.clearCart()">
+          <i class="bi bi-x-circle me-1"></i> Clear
+        </button>
+      </div>
+
+      <!-- Customer Selector Section -->
+      <div class="mb-2">
+        <div class="btn-group btn-group-sm w-100 mb-2" role="group">
+          <input type="radio" class="btn-check" name="posCustomerType" id="custTypeWalkin" value="walkin" checked>
+          <label class="btn btn-outline-secondary" for="custTypeWalkin">Walk-in</label>
+
+          <input type="radio" class="btn-check" name="posCustomerType" id="custTypeReg" value="registered">
+          <label class="btn btn-outline-secondary" for="custTypeReg">Registered</label>
+
+          <input type="radio" class="btn-check" name="posCustomerType" id="custTypeNew" value="new">
+          <label class="btn btn-outline-secondary" for="custTypeNew">+ New</label>
+        </div>
+
+        <div id="posRegisteredCustomerSection" style="display: none;">
+          <select id="posCustomerSelect" class="form-select form-select-sm">
+            <option value="">Select Existing Customer...</option>
+            {% for c in customers %}
+              <option value="{{ c.customer_id }}">{{ c.name }} ({{ c.phone }})</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div id="posNewCustomerSection" style="display: none;">
+          <div class="row g-1">
+            <div class="col-6">
+              <input type="text" id="posNewCustomerName" class="form-control form-control-sm" placeholder="Name">
+            </div>
+            <div class="col-6">
+              <input type="tel" id="posNewCustomerPhone" class="form-control form-control-sm" placeholder="Phone">
+            </div>
+            <div class="col-12 mt-1">
+              <input type="email" id="posNewCustomerEmail" class="form-control form-control-sm" placeholder="Email (optional)">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Items List Container -->
+    <div class="pos-cart-items" id="posCartItemsList">
+      <!-- Rendered dynamically by POS.render() -->
+    </div>
+
+    <!-- Summary & Checkout Controls -->
+    <div class="pos-cart-footer">
+      <div class="pos-summary-line">
+        <span class="text-muted">Subtotal:</span>
+        <span class="fw-bold" id="posSubtotalDisplay">{{ currency }}0.00</span>
+      </div>
+
+      <div class="pos-summary-line align-items-center">
+        <span class="text-muted">Discount:</span>
+        <div class="d-flex align-items-center gap-1">
+          <input type="number" id="posDiscountInput" class="form-control form-control-sm text-end" style="width: 70px;" value="0" min="0" step="0.5">
+          <select id="posDiscountType" class="form-select form-select-sm" style="width: 65px;" onchange="POS.render()">
+            <option value="amount">{{ currency }}</option>
+            <option value="percent">%</option>
+          </select>
+          <span class="fw-bold text-success" id="posDiscountDisplay">-{{ currency }}0.00</span>
+        </div>
+      </div>
+
+      <div class="pos-summary-line">
+        <span class="text-muted">Tax ({{ tax_rate }}%):</span>
+        <span class="fw-bold" id="posTaxDisplay">+{{ currency }}0.00</span>
+      </div>
+
+      <div class="pos-summary-total">
+        <span>Grand Total:</span>
+        <span style="color: var(--bakery-caramel);" id="posTotalDisplay">{{ currency }}0.00</span>
+      </div>
+
+      <!-- Payment Mode Selector -->
+      <input type="hidden" id="posSelectedPaymentMode" value="Cash">
+      <div class="pos-pay-btn-group">
+        <div class="btn-pay-option active" data-mode="Cash">
+          <i class="bi bi-cash-stack d-block fs-5"></i> Cash
+        </div>
+        <div class="btn-pay-option" data-mode="Card">
+          <i class="bi bi-credit-card-2-front d-block fs-5"></i> Card
+        </div>
+        <div class="btn-pay-option" data-mode="UPI">
+          <i class="bi bi-qr-code-scan d-block fs-5"></i> UPI
+        </div>
+      </div>
+
+      <button id="posCompleteBtn" class="btn btn-caramel btn-lg w-100 py-3 mt-3 fw-bold" onclick="POS.processCheckout()" disabled>
+        <i class="bi bi-check2-circle me-1"></i> Charge & Generate Invoice
+      </button>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/pos.js') }}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    POS.init({{ tax_rate }}, '{{ currency }}');
+  });
+</script>
+{% endblock %}

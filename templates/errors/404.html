@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}404 Page Not Found{% endblock %}
+{% block content %}
+<div class="container py-5 my-5 text-center">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card p-5 border-0 shadow-sm rounded-4">
+        <div class="display-1 fw-bold text-warning mb-3">
+          <i class="bi bi-cookie"></i> 404
+        </div>
+        <h2 class="mb-3">Oops! Recipe Not Found</h2>
+        <p class="text-muted mb-4">
+          The page or confection you are looking for has been moved, eaten, or does not exist in our bakery oven.
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+          <a href="{{ url_for('customer.home') }}" class="btn btn-bakery">
+            <i class="bi bi-house me-1"></i> Return Home
+          </a>
+          <a href="{{ url_for('customer.menu') }}" class="btn btn-outline-bakery">
+            <i class="bi bi-grid me-1"></i> Browse Menu
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
