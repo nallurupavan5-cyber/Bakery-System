@@ -16,6 +16,14 @@ def create_app():
     migrate.init_app(app, db)
     login_manager.init_app(app)
 
+    # Import all models before database initialization
+    from models.user import User, Staff, Customer
+    from models.product import Product, Category
+    from models.order import Order, Bill
+    from models.inventory import Ingredient
+    from models.supplier import Supplier
+    from models.settings import SystemSetting
+
     # Import application blueprints
     from routes import (
         admin,
@@ -37,6 +45,10 @@ def create_app():
     app.register_blueprint(customer.customer_bp)
     app.register_blueprint(inventory.inventory_bp)
     app.register_blueprint(manager.manager_bp)
+
+    # Automatically create missing database tables
+    with app.app_context():
+        db.create_all()
 
     return app
 
