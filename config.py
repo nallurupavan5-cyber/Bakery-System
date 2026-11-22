@@ -29,4 +29,7 @@ class Config:
 
     SQLALCHEMY_DATABASE_URI = _raw_db_url
 
+    # Currency symbol
+    CURRENCY_SYMBOL = os.environ.get("CURRENCY_SYMBOL", "$")
+
     SQLALCHEMY_TRACK_MODIFICATIONS = False

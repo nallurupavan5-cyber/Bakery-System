@@ -1,8 +1,21 @@
 ﻿
 import os
-from flask import Flask
+from decimal import Decimal, InvalidOperation
+from flask import Flask, current_app
 from extensions import db, migrate, login_manager
 from config import Config
+
+
+def currency_filter(value):
+    """Format a number as currency."""
+    try:
+        amount = Decimal(str(value or 0))
+    except (InvalidOperation, ValueError, TypeError):
+        amount = Decimal("0.00")
+
+    symbol = current_app.config.get("CURRENCY_SYMBOL", "$")
+
+    return f"{symbol}{amount:,.2f}"
 
 
 def create_app():
@@ -11,12 +24,15 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
+    # Register custom Jinja filters
+    app.jinja_env.filters["currency"] = currency_filter
+
     # Initialize Flask extensions
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
 
-    # Import all models before database initialization
+    # Import all database models
     from models.user import User, Staff, Customer
     from models.product import Product, Category
     from models.order import Order, Bill
@@ -46,7 +62,7 @@ def create_app():
     app.register_blueprint(inventory.inventory_bp)
     app.register_blueprint(manager.manager_bp)
 
-    # Automatically create missing database tables
+    # Create missing database tables
     with app.app_context():
         db.create_all()
 
